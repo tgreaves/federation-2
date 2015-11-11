@@ -36,6 +36,7 @@
 #include "factory.h"
 #include "fed.h"
 #include "fed_object.h"
+#include "fighting.h"
 #include "futures_contract.h"
 #include "futures_exchange.h"
 #include "galaxy.h"
@@ -108,6 +109,8 @@ const std::string	Player::rank_str[][MAX_RANK + 1] =
 		"Engineer", "Mogul", "Technocrat", "Gengineer", "Magnate", "Plutocrat"
 	}
 };
+
+Fighting	Player::fighting;
 
 
 Player::Player()
@@ -6689,3 +6692,66 @@ void	Player::Xt(const std::string& msg)
 	}
 }
 
+
+/* ------------------ Work in progress ------------------ */
+
+void	Player::Attack(Tokens *tokens)
+{
+	if(!IsInSpace())
+	{
+		Send("You need to be in your space ship to attack another player!\n",OutputFilter::DEFAULT);
+		return;
+	}
+
+	if(tokens->Size() < 2)
+	{
+		Send("You haven't said who you want to attack!\n",OutputFilter::DEFAULT);
+		return;
+	}
+
+	std::string defender_name = tokens->Get(1);
+	defender_name[0] = std::toupper(defender_name[0]);
+	Player *defender = Game::player_index->FindCurrent(defender_name);
+	if(defender == 0)
+	{
+		Send("There isn't a player with that name in the game!\n",OutputFilter::DEFAULT);
+		return;
+	}
+
+	const LocRec&	defender_loc = defender->GetLocRec();
+	if((defender_loc.map_name != loc.map_name) || (defender_loc.loc_no != loc.loc_no))
+	{
+		Send("To attack someone you need to be in the same location as they are!\n", OutputFilter::DEFAULT);
+		return;
+	}
+
+	std::ostringstream	buffer;
+	if(!fighting.Attack(this,defender))
+	{
+		buffer << "Either you or " << defender_name << " are already involved in a fight!\n";
+		Send(buffer.str(),OutputFilter::DEFAULT);
+		return;
+	}
+
+	buffer.str("");
+	buffer << "You are now attacking " << defender->Name() << "\n";
+	Send(buffer.str(),OutputFilter::DEFAULT);
+
+	buffer.str("");
+	buffer << name << " is attacking you!\n";
+	defender->Send(buffer.str(),OutputFilter::DEFAULT);
+
+	SetTempFlag(FIGHTING);
+	defender->SetTempFlag(FIGHTING);
+}
+
+void Player::Defend()
+{
+
+	if(ship == 0)
+	{
+		Send("You don't seem to have a spaceship at the moment!\n",OutputFilter::DEFAULT);
+		return;
+	}
+	ship->Defend(this);
+}

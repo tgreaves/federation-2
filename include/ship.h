@@ -7,6 +7,7 @@
 	without the express written permission of the copyright holder.
 -----------------------------------------------------------------------*/
 
+// TODO: Add a pointer to the player record! (Maybe shared_ptr when access to C++11)
 #ifndef SHIP_H
 #define SHIP_H
 
@@ -52,6 +53,8 @@ private:
 		SHIP_CLEAR, BUY_STARTER, BUY_CUSTOM
 	};	// purchasing status
 
+	static const int 	NO_DEFENCE = -1;
+
 	static const std::string	repair_error;
 
 	static Computer		*comp_types[];
@@ -78,6 +81,7 @@ private:
 	int			cur_hold;
 	int			magazine;
 	int			missiles;
+	int 			missile_defence;
 	WeaponRec	weapons[MAX_HARD_PT];
 	Manifest		manifest;
 	std::bitset<MAX_FLAGS>	flags;	// general purpose flags
@@ -120,6 +124,7 @@ public:
 	bool	FlagIsSet(int which)			{ return(flags.test(which));	}
 	bool	HasCargo()						{ return(manifest.size() != 0);				}
 	bool	HasCargo(const std::string& cargo_name,const std::string& origin);
+	bool	HasDefence()					{ return(missile_defence != NO_DEFENCE); }
 	bool	HasFuel()						{ return(cur_fuel > 0);	}
 	bool	HasWeapons();
 	bool	LockerIsFull();
@@ -128,6 +133,7 @@ public:
 	void	Buy(Player *player);
 	void	Buy(Player *player,std::string& line);
 	void	BuyFuel(Player *player,int amount);
+	void	Defend(Player *player);
 	void	Flee(Player *player);
 	void	FleeDamage(Player *player);
 	void	FlipFlag(Player *player,int which);

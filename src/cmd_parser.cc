@@ -91,7 +91,7 @@ const std::string	CmdParser::vocab[] =
 	"rent", "address", "tp", "teleport", "register", "quickwho", "bid", "approve",	// 175-182
 	"reject", "reset", "launch", "expel", "offer", "send", "flee", "divert",			// 183-190
 	"undivert", "move", "allocate", "stop", "extend", "hide", "claim","colonise",		// 190-198
-	"colonize",
+	"colonize", "attack", "defend",
 	""
 };
 
@@ -1018,13 +1018,15 @@ void	CmdParser::Execute(Player *player,int cmd, std::string& line)
 		case 197:	Claim(player);											break;	// 'claim'
 		case 198:
 		case 199:	Colonize(player);										break;	// 'colonize'
+		case 200:	player->Attack(tokens);								break;	// 'attack'
+		case 201:	player->Defend();										break;	// 'defend'
 	}
 }
 
 void	CmdParser::Exile(Player *player)
 {
-	static const std::string	error("You don't own this system!\n");
-	static const std::string	no_name("You haven't said who you want to exile!\n");
+//	static const std::string	error("You don't own this system!\n");
+//	static const std::string	no_name("You haven't said who you want to exile!\n");
 
 	FedMap	*fed_map = player->CurrentMap();
 	if((tokens->Size() >= 2) && fed_map->IsOwner(player))

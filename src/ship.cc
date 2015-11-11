@@ -79,6 +79,7 @@ Ship::Ship()
 	max_fuel = cur_fuel = 0;
 	max_hold = cur_hold = 0;
 	magazine = missiles = 0;
+	missile_defence = NO_DEFENCE;
 
 	for(int count = 0;count < MAX_HARD_PT;count++)
 	{
@@ -112,6 +113,7 @@ Ship::Ship(DBPlayer *pl_rec)
 	cur_hold = rec->cur_hold;
 	magazine = rec->magazine;
 	missiles = rec->missiles;
+	missile_defence = NO_DEFENCE;
 
 	for(int count = 0;count < MAX_HARD_PT;count++)
 	{
@@ -893,3 +895,41 @@ long	Ship::EngineRepair(Player *player,std::ostringstream& buffer,int action)
 	return(total);
 }
 
+
+/* ------------------ Work in progress ------------------ */
+
+void	Ship::Defend(Player *player)
+{
+	int laser_type = Weapon::MISSILE_RACK;	// ie no laser to defend with
+	int defensive_posn = 0;
+	for(int count = 0;count < MAX_HARD_PT;++count)
+	{
+		if(weapons[count].type <= Weapon::MISSILE_RACK)
+			continue;
+
+		if(weapons[count].type == Weapon::LASER)
+		{
+			laser_type = Weapon::LASER;
+			defensive_posn = count;
+		}
+		else
+		{
+			if(weapons[count].type < laser_type)
+			{
+				laser_type = weapons[count].type;
+				defensive_posn = count;
+			}
+		}
+	}
+
+	if(laser_type < Weapon::LASER)
+		player->Send("Your ship doesn't seem to have any lasers to allocate to defence!\n",OutputFilter::DEFAULT);
+	else
+	{
+		missile_defence = defensive_posn;
+		std::ostringstream	buffer;
+		buffer << "The computer will use your " << weapon_types[laser_type]->name;
+		buffer << " to defend against incoming missiles.\n";
+		player->Send(buffer.str(),OutputFilter::DEFAULT);
+	}
+}

@@ -33,6 +33,7 @@ the class look somewhat inconsistent until I finish the refactoring. - AL */
 #include "obj_list.h"
 #include "loc_rec.h"
 #include "player_index.h"
+#include "fighting.h"
 
 class Business;
 class Cargo;
@@ -46,6 +47,7 @@ class	DBPlayer;
 class Factory;
 class FedMap;
 class	FedObject;
+class Fighting;
 class	FuturesContract;
 class Inventory;
 class	Job;
@@ -73,7 +75,8 @@ class Player
 	friend bool PlayerIndex::ValidatePlayerRecord(Player *player);
 
 public:
-	friend class Newbie;
+	friend class	Newbie;
+	friend class	Fighting;
 
 	static const int	MAX_STAT;
 	static const int	MAX_COUNTERS = 2;
@@ -116,28 +119,30 @@ public:
 	{
 		SPACE, BRIEF, SPARE_1, INSURED, LOCKED, ALPHA_CREW, NO_COMMS,
 		NEWBOD, SPONSOR, MAX_FLAGS
-	};																						//	general purpose flags
+	};	//	general purpose flags
 
 	enum
 	{
 		EV_TRACE, FROZEN, TAXED, SLITHY2STAT, PLANET_CLAIMED,
-		PLANET_BUILT, TESTER, MAX_TEMP_FLAGS
+		PLANET_BUILT, TESTER, FIGHTING, MAX_TEMP_FLAGS
 	};	// temporary flags
 
 	enum
 	{
 		MANAGER, HOST_FLAG, NAV_FLAG, TECHIE, TECH_MANAGER,
 		MAX_MAN_FLAGS
-	};																						// management flags
+	};	// management flags
 
 	enum
 	{
 		UNUSED, OFF_LINE, IN_GAME, LOST_LINE, START, RACE, GENDER,
 		STATS, STR, STA, DEX, ACCEPT, BUY_SHIP, CUSTOM_SHIP,
 		NULL_PLAYER, MAX_STATUS
-	};																						// status of player
+	};	// status of player
 
 protected:
+	static Fighting	fighting;						// Handles ship fighting
+
 	std::string	name;										// name - size = 16
 	std::string ib_account;								// ibgames account name  - size = 24
 	unsigned char	password[MAX_PASSWD];			// MD5 hash of player's password - size = 16
@@ -403,6 +408,7 @@ public:
 	void	AdminFlags(Player *player);
 	void	Akaturi();
 	void	AllowBuilds(Player	*initiator);
+	void	Attack(Tokens *tokens);
 	void	BlowKiss(Player *recipient);
 	void	Brief(bool value)									{ value ? flags.set(BRIEF) : flags.reset(BRIEF); }
 	void	Build(int build_type,Tokens *tokens);
@@ -454,6 +460,7 @@ public:
 	void	CustomsSearch();
 	void	DeadDead();
 	void	DeclareBankruptcy();
+	void	Defend();
 	void	Deliver();
 	void	Demolish(const std::string&  building);
 	void	DisallowBuilds(Player	*initiator);
